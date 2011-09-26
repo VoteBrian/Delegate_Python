@@ -43,19 +43,33 @@ class GUIFramework(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master.title("Type Some Text")
-        self.grid(padx=10, pady=10)
+        self.config(bg='#e8e8e8')
+        self.grid(padx=10, pady=0)
+        self.pack(expand=YES, fill=BOTH)
         self.CreateWidgets()
 
     def CreateWidgets(self):
-        self.lbText = Label(self, text="Label")
+        self.lbText = Label(self, text="Sort Options")
+        self.lbText.config(bg='#e8e8e8')
         self.lbText.grid(row=0, column=0)
-
+        
         curs.execute("select name from sort_options ORDER BY '_id'")
+        x = len(curs.fetchall())
+        print x
+        curs.execute("select name from sort_options ORDER BY '_id'")
+
+
+        btn = range(x)
         r = 1
         for row in curs:
-            self.lbButton = Button(self, text=row)
-            self.lbButton.grid(row=r, column=0)
+            btn[r-1] = Button(self, text=row)
+            btn[r-1].config(bg='#afcefc', relief=FLAT)
+            btn[r-1].grid(row=r, column=0)
+            #btn[r-1].pack(expand=YES, fill=X)
+            
             r = r + 1
+
+        #btn[0].pack(expand=YES, fill=X)
             
 if __name__ == "__main__":
     guiFrame = GUIFramework()
