@@ -1,131 +1,52 @@
-import sqlite3
 from Tkinter import *
+import db
+import TaskRow
+
+root = Tk()
+
+# initialize database and tables
+#db.initialize()
 
 # --------------------
 # FUNCTION DEFINITIONS
 # --------------------
-# utility functions
-def getAllTasks():
-    curs.execute('select * from tasks')
-    return curs
-
-def getNumTasks():
-    curs.execute('select _id from tasks')
-    return len(curs.fetchall())
 
 def createTask():
     s = StringVar()
     s = new_task_entry.get()
+    new_task_entry.delete(0, END)
     if len(s) > 0:
-        curs.execute('insert into tasks values (NULL, ?, NULL, NULL)', [s])
-        new_task_entry.delete(0, END)
+        db.createTask(s)
 
         #delete all tasks for redraw
-        deleteAllTaskRows()
-
+        removeAllTaskRows()
         drawAllTasks()
 
-    conn.commit()
-
-def deleteAllTaskRows():
+def removeAllTaskRows():
     numTasks = len(root.taskRow)
-    for r in xrange(0, numTasks-1):
+    for r in xrange(0, numTasks):
         root.taskRow[r].delete()    
     
 def drawAllTasks():
-    numTasks = getNumTasks()
+    numTasks = db.getNumTasks()
     root.taskRow = range(numTasks)
-    curs = getAllTasks()
+    curs = db.getAllTasks()
     r = 0
     for row in curs:
-        root.taskRow[r] = TaskRow()
-        root.taskRow[r].setID(row[0])
+        root.taskRow[r] = TaskRow.TaskRow()
+        root.taskRow[r].setFrame(main_panel)
         root.taskRow[r].setTitle(row[1])
+        root.taskRow[r].setID(row[0])
+        root.taskRow[r].createWidgets()
         root.taskRow[r].draw()
         r = r+1
 
-def testing():
-    print "testing"
-
-# -------
-# CLASSES
-# -------
-class TaskRow:
-    _title = "Default"
-    _id = 0
-    _desc = "Default"
-    
-    def setID(self, id):
-        self._id = id
-        
-    def setTitle(self, title):
-        self._title = title
-
-    def setDesc(self, desc):
-        self._desc = desc
-
-    def setAssignee(self, assignee):
-        self._assignee = assignee
-
-    def draw(self):
-        self.titleBtn = Checkbutton(main_panel, text=self._title)
-        self.titleBtn.config(bg="#ffffff", anchor=W, relief=FLAT)
-        self.titleBtn.pack(side=TOP, fill=X)
-        
-        self.div = Frame(main_panel)
-        self.div.config(height=2, bd=1, relief=SUNKEN)
-        self.div.pack(fill=X, pady=2, padx=2)
-
-    def delete(self):
-        self.titleBtn.destroy()
-        self.div.destroy()
-
-    
-
-# -------------------------
-# INITIALIZE DATABASE STUFF
-# -------------------------
-
-#open connection to database
-conn = sqlite3.connect('test.db')
-curs = conn.cursor()
-
-#create sort_options and populate, if this hasn't already been done.
-curs.execute('''create table if not exists sort_options (_id integer primary key, name text)''')
-curs.execute('select * from sort_options')
-r = len(curs.fetchall())
-if r == 0:
-    t = [("Priority"),
-         ("Due Date"),
-         ("Date Created"),
-         ("Completion")]
-
-    for row in xrange(0, len(t)):
-        curs.execute("insert into sort_options values (NULL, ?)", [t[row]])
-
-#create tasks and populate, if this hasn't already been done
-curs.execute('''create table if not exists tasks (_id integer primary key,
-                                                task_title text,
-                                                task_desc text,
-                                                assignee text)''')
-curs.execute('select * from tasks')
-r = len(curs.fetchall())
-if r == 0:
-    curs.execute('insert into tasks values (NULL, ?, ?, ?)', ["Update Egypt Drawings",
-                 "Redraw to match standard release style", "Brian Flores"])
-
-##curs.execute('select * from tasks')
-##for row in curs:
-##    print row
-
-#conn.commit()
-#conn.close()
 
 
 # ---------
 # GUI STUFF
 # ---------
-root = Tk()
+#root = Tk()
 root.title("Delegate")
 root.geometry("800x600")
 btn_side = range(4)
@@ -149,9 +70,9 @@ div = Frame(sidePanel)
 div.config(bg="#ffffff", height=1, relief=FLAT)
 div.pack(fill=X, pady=2, padx=2)
 
-curs.execute('select name from sort_options')
+c = db.getSortNames()
 r=0
-for row in curs:
+for row in c:
     btn_side[r] = Button(sidePanel, text=row[0])
     btn_side[r].config(anchor=W, relief=FLAT, bg="#e8e8e8")
     btn_side[r].pack(side=TOP, fill=X)
@@ -171,13 +92,25 @@ sidePanel.pack(side=LEFT, fill=BOTH)
 # CREATE MAIN PANEL
 # -----------------
 
+# canvas for scrolling
+##container_Frame.grid_rowconfigure(0, weight=1)
+##container_Frame.grid_columnconfigure(0, weight=1)
+##
+##yscrollbar = Scrollbar(container_Frame)
+##yscrollbar.grid(row=0, column=1, sticky=N+S)
+##
+##canvas = Canvas(container_Frame, yscrollcommand=yscrollbar.set)
+##canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
 # border
 border_panel = Frame(container_Frame)
 border_panel.config(bg="#cbcbcb", padx=1, pady=1)
+border_panel.pack(side=LEFT, fill=BOTH, expand=1)
 
 # content
 main_panel = Frame(border_panel)
 main_panel.config(bg="#ffffff")
+main_panel.pack(side=LEFT, fill=BOTH, expand=1)
 
 # add new task
 task_str = StringVar()
@@ -201,8 +134,5 @@ div.pack(fill=X, pady=2, padx=2)
 
 # list tasks
 drawAllTasks()
-
-main_panel.pack(side=LEFT, fill=BOTH, expand=1)
-border_panel.pack(side=LEFT, fill=BOTH, expand=1)
 
 root.mainloop()
