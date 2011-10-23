@@ -40,9 +40,8 @@ def getNumTasks():
     curs.execute('select _id from tasks')
     return len(curs.fetchall())
 
-def createTask(s):
-    if len(s) > 0:
-        curs.execute('insert into tasks values (NULL, ?, NULL, NULL)', [s])
+def createTask(title, desc, asignee):
+    curs.execute('insert into tasks values (NULL, ?, ?, ?)', [title, desc, asignee])
     conn.commit()
 
 def getSortNames():

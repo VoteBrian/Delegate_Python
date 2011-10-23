@@ -4,20 +4,44 @@ import TaskRow
 
 root = Tk()
 
-# initialize database and tables
-#db.initialize()
-
 # --------------------
 # FUNCTION DEFINITIONS
 # --------------------
+    
+def drawCreateTaskButton():
+    task_str = StringVar()
+
+    new_task_container = Frame(main_panel)
+    new_task_container.config(bg="#ffffff")
+    new_task_container.pack(side=TOP, fill=X)
+
+    new_task_entry = Entry(new_task_container)
+    new_task_entry.config(bg="#d9d9d9")
+    new_task_entry.pack(side=LEFT, fill=BOTH, expand=1)
+
+    new_task_button = Button(new_task_container, command=createTask)
+    new_task_button.config(text="Create Task")
+    new_task_button.pack(side=LEFT, fill=X, expand=0)
+
+    div = Frame(main_panel)
+    div.config(height=2, bd=1, relief=SUNKEN)
+    div.pack(fill=X, pady=2, padx=2)
 
 def createTask():
-    s = StringVar()
-    s = new_task_entry.get()
-    new_task_entry.delete(0, END)
-    if len(s) > 0:
-        db.createTask(s)
+    entryStr = StringVar()
+    entryStr = taskEntry.get()
+    taskEntry.delete(0, END)
+    if len(entryStr) > 0:
+        divisions = entryStr.split(";")
 
+        divs = len(divisions)
+        if(divs==1):
+            db.createTask(divisions[0], "", "")
+        elif(divs==2):
+            db.createTask(divisions[0], divisions[1], "")
+        else:
+            db.createTask(divisions[0], divisions[1], divisions[2])
+            
         #delete all tasks for redraw
         removeAllTaskRows()
         drawAllTasks()
@@ -34,31 +58,39 @@ def drawAllTasks():
     r = 0
     for row in curs:
         root.taskRow[r] = TaskRow.TaskRow()
-        root.taskRow[r].setFrame(main_panel)
+        root.taskRow[r].setFrame(bodyFrame)
         root.taskRow[r].setTitle(row[1])
-        root.taskRow[r].setID(row[0])
-        root.taskRow[r].createWidgets()
-        root.taskRow[r].draw()
+        root.taskRow[r].setDesc(row[2])
+        root.taskRow[r].createRow()
         r = r+1
 
+    canvas.pack()
 
+def drawTaskRow(r, c):
+    root.taskRow[r] = TaskRow.TaskRow()
+    root.taskRow[r].setFrame(c)
+    root.taskRow[r].setTitle("Brian"+str(r))
+    root.taskRow[r].setID(r)
+    root.taskRow[r].createWidgets()
+    root.taskRow[r].draw()
 
 # ---------
 # GUI STUFF
 # ---------
-#root = Tk()
+
 root.title("Delegate")
 root.geometry("800x600")
 btn_side = range(4)
 
-container_Frame = Frame(root)
-container_Frame.config(bg="#e8e8e8", pady=10, padx=2, width=900)
-container_Frame.pack(fill=BOTH, expand=1)
+containerFrame = Frame(root)
+containerFrame.config(bg="#e8e8e8", pady=10, padx=2, width=900)
+containerFrame.pack(fill=BOTH, expand=1)
+
 
 # -----------------
 # CREATE SIDE PANEL
 # -----------------
-sidePanel = Frame(container_Frame)
+sidePanel = Frame(containerFrame)
 sidePanel.config(bg="#e8e8e8")
 
 # Options pulled from sort_options
@@ -83,6 +115,8 @@ for row in c:
 
     r = r+1
 
+btn_side[0].config(bg="#afcefc")
+
 # TODO
 # Filter options
 
@@ -92,47 +126,70 @@ sidePanel.pack(side=LEFT, fill=BOTH)
 # CREATE MAIN PANEL
 # -----------------
 
-# canvas for scrolling
-##container_Frame.grid_rowconfigure(0, weight=1)
-##container_Frame.grid_columnconfigure(0, weight=1)
-##
-##yscrollbar = Scrollbar(container_Frame)
-##yscrollbar.grid(row=0, column=1, sticky=N+S)
-##
-##canvas = Canvas(container_Frame, yscrollcommand=yscrollbar.set)
-##canvas.pack(side=LEFT, fill=BOTH, expand=1)
+containerFrame.grid_rowconfigure(0, weight=1)
+containerFrame.grid_columnconfigure(0, weight=1)
 
-# border
-border_panel = Frame(container_Frame)
-border_panel.config(bg="#cbcbcb", padx=1, pady=1)
-border_panel.pack(side=LEFT, fill=BOTH, expand=1)
+canvas = Canvas(containerFrame)
+canvas.config(scrollregion=(0,0,600,800))
+scrollbar = Scrollbar(containerFrame)
 
-# content
-main_panel = Frame(border_panel)
-main_panel.config(bg="#ffffff")
-main_panel.pack(side=LEFT, fill=BOTH, expand=1)
+scrollbar.config(command=canvas.yview)
+canvas.config(yscrollcommand=scrollbar.set)
+scrollbar.pack(side=RIGHT, fill=Y)
+canvas.pack(side=LEFT, fill=BOTH, expand=1)
+        
+canvas.config(scrollregion=canvas.bbox(ALL))
+bodyFrame = Frame(canvas, padx=1, pady=1)
+bodyFrame.config(bg="#cbcbcb")
+canvas.create_window(0,0, window=bodyFrame, anchor="nw")
 
-# add new task
-task_str = StringVar()
+# Create New Task
+newTask = Frame(bodyFrame)
+newTask.config(bg="#e8e8e8")
+newTask.pack(side=TOP, fill=X, expand=1, anchor=N)
 
-new_task_container = Frame(main_panel)
-new_task_container.config(bg="#ffffff")
-new_task_container.pack(side=TOP, fill=X)
+taskEntry = Entry(newTask)
+taskEntry.config(bg="#ffffff", relief=FLAT)
+taskEntry.pack(side=LEFT, fill=BOTH, expand=1)
+taskEntry.insert(0,"Add New Task")
 
-new_task_entry = Entry(new_task_container)
-new_task_entry.config(bg="#d9d9d9")
-new_task_entry.pack(side=LEFT, fill=BOTH, expand=1)
+taskButton = Button(newTask)
+taskButton.config(text=">>>", relief=FLAT, command=createTask)
+taskButton.pack(side=RIGHT, fill=X, expand=0)
 
-new_task_button = Button(new_task_container, command=createTask)
-new_task_button.config(text="Create Task")
-new_task_button.pack(side=LEFT, fill=X, expand=0)
-
-div = Frame(main_panel)
-div.config(height=2, bd=1, relief=SUNKEN)
-div.pack(fill=X, pady=2, padx=2)
+newTaskBorder = Frame(bodyFrame)
+newTaskBorder.config(height=2, bg="#cbcbcb")
+newTaskBorder.pack(side=TOP, fill=X, expand=1)
 
 
-# list tasks
-drawAllTasks()
+numTasks = db.getNumTasks()
+
+if numTasks > 0:
+    root.taskRow = range(numTasks)
+    data = db.getAllTasks()
+    r = 0
+    for row in data:
+        root.taskRow[r] = TaskRow.TaskRow()
+        root.taskRow[r].setFrame(bodyFrame)
+        root.taskRow[r].setTitle(row[1])
+        root.taskRow[r].setDesc(row[2])
+        root.taskRow[r].createRow()
+        
+        r = r+1
+else:
+    emptyTasks = Frame(bodyFrame)
+    emptyTasks.config(bg="#ffffff")
+    emptyTasks.pack(side=TOP, fill=BOTH, expand=1)
+    
+##taskRow = range(10)
+##for r in xrange(0,9):
+##    taskRow[r] = TaskRow.TaskRow()
+##    taskRow[r].setFrame(bodyFrame)
+##    taskRow[r].createRow()
+
+bodyFrame.pack(side=LEFT, fill=BOTH, expand=1, anchor=N)
+
+canvas.config(scrollregion=canvas.bbox(ALL))
+
 
 root.mainloop()

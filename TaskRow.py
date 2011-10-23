@@ -21,18 +21,25 @@ class TaskRow():
     def setAssignee(self, assignee):
         self._assignee = assignee
 
-    def createWidgets(self):
-        self.titleBtn = Checkbutton(self._frame, text=self._title)
-        self.div = Frame(self._frame)
+    def createRow(self):
+        self.frameRow = Frame(self._frame)
+        self.frameRow.config(bg="#d9d9d9")
+        self.frameRow.pack(side=TOP, fill=X, expand=1, anchor=N)
 
-    def draw(self):
-        self.titleBtn.config(bg="#ffffff", anchor=W, relief=FLAT)
-        self.titleBtn.pack(side=TOP, fill=X)
-        
-        self.div.config(height=2, bd=1, relief=SUNKEN)
-        self.div.pack(fill=X, pady=2, padx=2)
+        self.frameTitle = Label(self.frameRow, font=("Arial", 12), padx=10)
+        self.frameTitle.config(bg="#ffffff", text=self._title, anchor=W)
+        self.frameTitle.pack(side=TOP, fill=X, expand=0)
+
+        self.frameDesc = Label(self.frameRow, font=("Arial", 8), padx=10)
+        self.frameDesc.config(bg="#ffffff", fg="#555555", text=self._desc, anchor=W)
+        self.frameDesc.pack(side=TOP, fill=BOTH, expand=1)
+
+        self.rowBorder = Frame(self.frameRow, padx=10)
+        self.rowBorder.config(height=1, relief=FLAT, bg="#cbcbcb")
+        self.rowBorder.pack(side=TOP, fill=X, expand=1)
 
     def delete(self):
-        self.titleBtn.destroy()
-        self.div.destroy()
-    
+        self.frameRow.destroy()
+        self.frameTitle.destroy()
+        self.frameDesc.destroy()
+        self.rowBorder.destroy()
