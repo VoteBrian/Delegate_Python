@@ -130,23 +130,23 @@ containerFrame.grid_rowconfigure(0, weight=1)
 containerFrame.grid_columnconfigure(0, weight=1)
 
 canvas = Canvas(containerFrame)
-canvas.config(scrollregion=(0,0,600,800))
-scrollbar = Scrollbar(containerFrame)
+scrollbar = Scrollbar(containerFrame, orient=VERTICAL)
 
 scrollbar.config(command=canvas.yview)
 canvas.config(yscrollcommand=scrollbar.set)
 scrollbar.pack(side=RIGHT, fill=Y)
-canvas.pack(side=LEFT, fill=BOTH, expand=1)
+canvas.pack(side=TOP, fill=X, expand=1, anchor=N)
         
 canvas.config(scrollregion=canvas.bbox(ALL))
 bodyFrame = Frame(canvas, padx=1, pady=1)
 bodyFrame.config(bg="#cbcbcb")
+bodyFrame.pack(side=TOP, fill=X, expand=1)
 canvas.create_window(0,0, window=bodyFrame, anchor="nw")
 
 # Create New Task
 newTask = Frame(bodyFrame)
 newTask.config(bg="#e8e8e8")
-newTask.pack(side=TOP, fill=X, expand=1, anchor=N)
+newTask.pack(side=TOP, fill=X, expand=0, anchor=N)
 
 taskEntry = Entry(newTask)
 taskEntry.config(bg="#ffffff", relief=FLAT)
@@ -187,7 +187,8 @@ else:
 ##    taskRow[r].setFrame(bodyFrame)
 ##    taskRow[r].createRow()
 
-bodyFrame.pack(side=LEFT, fill=BOTH, expand=1, anchor=N)
+
+bodyFrame.pack(side=TOP, fill=X, expand=1)
 
 canvas.config(scrollregion=canvas.bbox(ALL))
 

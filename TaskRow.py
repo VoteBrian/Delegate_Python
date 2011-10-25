@@ -24,7 +24,7 @@ class TaskRow():
     def createRow(self):
         self.frameRow = Frame(self._frame)
         self.frameRow.config(bg="#d9d9d9")
-        self.frameRow.pack(side=TOP, fill=X, expand=1, anchor=N)
+        self.frameRow.pack(side=TOP, fill=X, expand=0, anchor=N)
 
         self.frameTitle = Label(self.frameRow, font=("Arial", 12), padx=10)
         self.frameTitle.config(bg="#ffffff", text=self._title, anchor=W)
